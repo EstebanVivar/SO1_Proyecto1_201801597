@@ -38,11 +38,13 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
             mb = rss / 1048576;
             if (Aux)
             {
-                seq_printf(archivo, "{\n\t\"pid\":\"%d\",\n\t\"nombre\":\"%s\",\n\t\"ram\":\"%ld\",\n\t\"hijos\":[", task->pid, task->comm, mb);
+                seq_printf(archivo, "{\n\t\"pid\":%d,\n\t\"nombre\":\"%s\",\n\t\"ram\":%ld,\n\t\"usuario\":\"%d\",\n\t\"estado\":\"%ld\",\n\t\"hijos\":[", 
+                                      task->pid,            task->comm,         mb,             task->sessionid,        task->state     );
                 Aux = false;
             }
             else{
-            seq_printf(archivo, ",{\n\t\"pid\":\"%d\",\n\t\"nombre\":\"%s\",\n\t\"ram\":\"%ld\",\n\t\"hijos\":[", task->pid, task->comm, mb);
+            seq_printf(archivo, ",{\n\t\"pid\":%d,\n\t\"nombre\":\"%s\",\n\t\"ram\":%ld,\n\t\"usuario\":\"%d\",\n\t\"estado\":\"%ld\",\n\t\"hijos\":[", 
+            task->pid, task->comm, mb,task->sessionid,        task->state);
             }
             esPadre = true;
         }
@@ -50,12 +52,14 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
         {
             if (Aux)
             {
-                seq_printf(archivo, "{\n\t\"pid\":\"%d\",\n\t\"nombre\":\"%s\",\n\t\"ram\": \"0\",\n\t\"hijos\":[", task->pid, task->comm);
+                seq_printf(archivo, "{\n\t\"pid\":%d,\n\t\"nombre\":\"%s\",\n\t\"ram\": 0,\n\t\"usuario\":\"%d\",\n\t\"estado\":\"%ld\",\n\t\"hijos\":[", 
+                task->pid, task->comm,task->sessionid,        task->state);
                 Aux = false;
             }
             else
             {
-                seq_printf(archivo, ",{\n\t\"pid\":\"%d\",\n\t\"nombre\":\"%s\",\n\t\"ram\": \"0\",\n\t\"hijos\":[", task->pid, task->comm);
+                seq_printf(archivo, ",{\n\t\"pid\":%d,\n\t\"nombre\":\"%s\",\n\t\"ram\": 0,\n\t\"usuario\":\"%d\",\n\t\"estado\":\"%ld\",\n\t\"hijos\":[", 
+                task->pid, task->comm,task->sessionid,        task->state);
             }
             esPadre = true;
         }
@@ -72,11 +76,11 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
                 mb = rss / 1048576;
                 if (first)
                 {
-                    seq_printf(archivo, "\t{\"pid\": \"%d\", \"nombre\": \"%s\", \"estado\": \"%ld\" ,\"ram\": \"%ld\"}",
+                    seq_printf(archivo, "\t{\"pid\": %d, \"nombre\": \"%s\", \"estado\": \"%ld\" ,\"ram\": %ld}",
                                task_child->pid, task_child->comm, task_child->state, mb);
                     first = false;
                 }
-                seq_printf(archivo, ",\t{\"pid\": \"%d\", \"nombre\": \"%s\", \"estado\": \"%ld\" ,\"ram\": \"%ld\"}",
+                seq_printf(archivo, ",\t{\"pid\": %d, \"nombre\": \"%s\", \"estado\": \"%ld\" ,\"ram\": %ld}",
                            task_child->pid, task_child->comm, task_child->state, mb);
             }
             else
@@ -84,11 +88,11 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
                 conhijos = true;
                 if (first)
                 {
-                    seq_printf(archivo, "\t{\"pid\": \"%d\", \"nombre\": \"%s\", \"estado\": \"%ld\",\"ram\": \"0\"}",
+                    seq_printf(archivo, "\t{\"pid\": %d, \"nombre\": \"%s\", \"estado\": \"%ld\",\"ram\": 0}",
                                task_child->pid, task_child->comm, task_child->state);
                     first = false;
                 }
-                seq_printf(archivo, ",\t{\"pid\": \"%d\", \"nombre\": \"%s\", \"estado\": \"%ld\",\"ram\": \"0\"}",
+                seq_printf(archivo, ",\t{\"pid\": %d, \"nombre\": \"%s\", \"estado\": \"%ld\",\"ram\": 0}",
                            task_child->pid, task_child->comm, task_child->state);
             }
         }

@@ -25,19 +25,18 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
     unsigned long memoria_total;
     unsigned long memoria_libre;
     unsigned long memoria_buffer;
-    unsigned long memoria_usada;
-    unsigned long porcentaje;
+    unsigned long memoria_compartida;
     
     si_meminfo(&inf);
     memoria_total = inf.totalram *inf.mem_unit/1048576;
     memoria_libre = inf.freeram *inf.mem_unit/1048576;
     memoria_buffer = inf.bufferram *inf.mem_unit/1048576;
-    memoria_usada = memoria_total-(memoria_libre+memoria_buffer);
-    porcentaje=(memoria_usada*100)/memoria_total;
+    memoria_compartida = inf.sharedram *inf.mem_unit/1048576;
 
-    seq_printf(archivo, "{\"total\":\"%li\",\n", memoria_total);
-    seq_printf(archivo, "\"used\":\"%li\",\n", memoria_usada);
-    seq_printf(archivo, "\"percent\":\"%li\"}", porcentaje);
+    seq_printf(archivo, "{\"total\":%li,\n", memoria_total);
+    seq_printf(archivo, "\"free\":%li,\n", memoria_libre);
+    seq_printf(archivo, "\"buffer\":%li,\n", memoria_buffer);
+    seq_printf(archivo, "\"shared\":%li}", memoria_compartida);
     return 0;
 }
 
