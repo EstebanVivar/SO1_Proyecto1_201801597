@@ -12,7 +12,6 @@ function App() {
 
       <Navigation />
       <Routes>
-        <Route exact path='/' element={<Home/>} />
         <Route path='/Home' element={<Home/>} />
 
         <Route path='/RAM' element={<RAM/>} />

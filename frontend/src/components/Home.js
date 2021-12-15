@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-import { Accordion, Table } from 'react-bootstrap';
-const ws = new WebSocket("ws://127.0.0.1:8080/Home");
+import { Accordion, Button, Form, Table } from 'react-bootstrap';
+
+import axios from 'axios';
 
 const Home = () => {
-
+	const ws = useRef(null);
 	const [Total, setTotal] = useState(0)
 	const [Ejecucion, setEjecucion] = useState(0)
 	const [Suspendidos, setSuspendidos] = useState(0)
@@ -12,29 +13,46 @@ const Home = () => {
 	const [Zombies, setZombies] = useState(0)
 	const [Procesos, setProcesos] = useState([])
 
-	useEffect(() => {
-		async function fetchWS() {
-			ws.onopen = () => {
-				console.log('WebSocket Client Connected');
-
-			};
-			ws.onmessage = (message) => {
-				var valor = JSON.parse(message.data);
-				setTotal(valor.total)
-				setEjecucion(valor.ejecucion)
-				setDetenidos(valor.detenidos)
-				setSuspendidos(valor.suspendidos)
-				setZombies(valor.zombies)
-				setProcesos(valor.procesos.root)
-			};
-			ws.onclose = () => {
-				console.log("Enlace Cerrado")
-			}
+	const killProc = async (e, x) => {
+		e.preventDefault();
+		const data = {
+			pid: x
 		}
 
-		fetchWS()
+		console.log(data)
+		await axios
+			.post("http://localhost:8080/Kill", data)
+			.then(response => {
+				if (response) {
+					console.log(response.data)
+				}
+			})
+	}
+	useEffect(() => {
+
+		ws.current = new WebSocket("ws://127.0.0.1:8080/Home");
+		ws.current.onopen = () => { console.log('Enlace Conectado') };
+		ws.current.onclose = () => { console.log("Enlace Cerrado") }
+		const wsCurrent = ws.current;
+		return () => { wsCurrent.close(); }
+
 	}, [])
 
+	useEffect(() => {
+		if (!ws.current) return;
+
+		ws.current.onmessage = (message) => {
+			var valor = JSON.parse(message.data);
+			setTotal(valor.total)
+			setEjecucion(valor.ejecucion)
+			setDetenidos(valor.detenidos)
+			setSuspendidos(valor.suspendidos)
+			setZombies(valor.zombies)
+			setProcesos(valor.procesos.root)
+		};
+
+
+	}, [Total, Ejecucion, Suspendidos, Detenidos, Zombies, Procesos])
 
 	let font_color = "black"
 	return (
@@ -61,10 +79,9 @@ const Home = () => {
 					</h4>
 				</div>
 				<div className="col-md-6  mt-4 " >
-					{Procesos.map((element) => {
-						return (
-
-							<Accordion key={element.pid} defaultActiveKey="0">
+					<Accordion defaultActiveKey="0">
+						{Procesos.map((element) => {
+							return (
 								<Accordion.Item key={element.pid} eventKey="1">
 									<Accordion.Header key={element.pid}>PID: {element.pid} - Proceso:{element.nombre}</Accordion.Header>
 									{element.hijos.length > 0 ?
@@ -76,11 +93,9 @@ const Home = () => {
 											)
 										}) : null}
 								</Accordion.Item>
-
-							</Accordion>
-						)
-					})}
-
+							)
+						})}
+					</Accordion>
 
 				</div>
 				<div className="col-md-6 mt-4" >
@@ -92,6 +107,7 @@ const Home = () => {
 								<th>Usuario</th>
 								<th>Estado</th>
 								<th>%RAM</th>
+								<th>Accion</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -103,6 +119,14 @@ const Home = () => {
 										<td>{element.usuario}</td>
 										<td>{element.estado}</td>
 										<td>{Number.parseFloat(element.ram / 7846 * 100).toFixed(2)}%</td>
+
+										<td>
+											{<Form onSubmit={event => killProc(event, element.pid)}>
+												<Button type='submit'>
+													KILL
+												</Button>
+											</Form>}
+										</td>
 									</tr>
 								</>)
 							})}

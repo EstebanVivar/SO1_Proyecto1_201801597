@@ -2,15 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/rs/cors"
 )
 
 type Memory struct {
@@ -19,8 +23,6 @@ type Memory struct {
 	Buffer int `json:"buffer"`
 	Shared int `json:"shared"`
 }
-
-
 
 type Hijo struct {
 	PID    int    `json:"pid"`
@@ -88,7 +90,7 @@ func HomeEcho(conn *websocket.Conn) {
 	for {
 		Home := HomeHandler()
 		conn.WriteJSON(Home)
-		time.Sleep(3 * time.Second)
+		time.Sleep(8 * time.Second)
 	}
 }
 
@@ -151,7 +153,7 @@ func RAMEcho(conn *websocket.Conn) {
 	for {
 		RAM := RAMHandler()
 		conn.WriteJSON(RAM)
-		time.Sleep(3 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
 
@@ -197,7 +199,7 @@ func CPUEcho(conn *websocket.Conn) {
 	for {
 		CPU := CPUHandler()
 		conn.WriteJSON(CPU)
-		time.Sleep(3 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -206,7 +208,7 @@ type CPUJSON struct {
 }
 
 func CPUHandler() CPUJSON {
-	cmd := "top -bn 1 -i -c | head -n 3 | tail -1 | awk {'print 100-$8'}"
+	cmd := "awk '{u=$2+$4; t=$2+$4+$5; if (NR==1){u1=u; t1=t;} else print ($2+$4-u1) * 100 / (t-t1) ; }' <(grep 'cpu ' /proc/stat) <(sleep 0.1;grep 'cpu ' /proc/stat)"
 	consumo, _ := exec.Command("bash", "-c", cmd).Output()
 	aux := strings.TrimSpace(string(consumo))
 	porcentaje, _ := strconv.ParseFloat(aux, 64)
@@ -215,19 +217,52 @@ func CPUHandler() CPUJSON {
 	cpu.Porcentaje=porcentaje
 	return cpu
 }
+type  KillJSON struct {
+	PID    int `json:"pid"`
+}
+func kill(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var kill KillJSON
+	_ = json.NewDecoder(r.Body).Decode(&kill)
+    
+    
 
-func setupRoutes() {
-	http.HandleFunc("/Home", Home)
+	process, err := os.FindProcess(kill.PID)
 
-	http.HandleFunc("/RAM", RAM)
+	if err != nil {
+		fmt.Println("error1: " + err.Error());
+	} else {
+		err = process.Kill()
+		if err != nil {
+			fmt.Println("error3: " + err.Error())
+		} else {
+			fmt.Println("Proceso matado correctamente")
+		}
+	}
 
-	http.HandleFunc("/CPU", CPU)
+	
+	fmt.Println("Command Successfully Executed")
+	json.NewEncoder(w).Encode("OKOK")
 }
 
 func main() {
 
-	setupRoutes()
-	panic(http.ListenAndServe(":8080", nil))
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/Home", Home)
+
+	router.HandleFunc("/RAM", RAM)
+
+	router.HandleFunc("/CPU", CPU)
+
+	router.HandleFunc("/Kill", kill)
+	
+	c := cors.New(cors.Options{
+        AllowedOrigins: []string{"*"},
+        AllowCredentials: true,
+    })
+
+	handler := c.Handler(router)
+	log.Fatal(http.ListenAndServe(":8080", handler))
 
 	// RAMHandler()
 }
