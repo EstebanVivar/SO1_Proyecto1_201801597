@@ -18,7 +18,7 @@ const Navigation = () => {
             <Navbar.Collapse  >
                 <Nav >                
                     <Nav.Link  href="/RAM"> &nbsp; RAM &nbsp;</Nav.Link>
-                    <Nav.Link  href="/Editor"> &nbsp; CPU &nbsp;</Nav.Link>                   
+                    <Nav.Link  href="/CPU"> &nbsp; CPU &nbsp;</Nav.Link>                   
                 </Nav>
             </Navbar.Collapse>
         </Navbar>

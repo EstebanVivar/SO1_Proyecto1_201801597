@@ -91,6 +91,11 @@ const RAM = () => {
 				display: "flex"
 			}}>
 				<div className='container row ' style={{ alignContent: "center", background: "white", padding: "30px 20px 10px 20px", borderRadius: 10 }}>
+					<div className=" d-flex justify-content-evenly mb-1">
+						<h2 style={{ alignContent: "center", fontFamily: 'Roboto Condensed' }}>
+							Consumo de memoria RAM
+						</h2>
+					</div>
 					<div className="col-md-6  mt-2 d-flex justify-content-evenly" >
 						<h4 style={{ alignContent: "center", fontFamily: 'Roboto Condensed' }}>
 							Total: {Total} MB
@@ -98,20 +103,16 @@ const RAM = () => {
 					</div>
 					<div className="col-md-6  mt-2 d-flex justify-content-evenly" >
 						<h4 style={{ alignContent: "center", fontFamily: 'Roboto Condensed' }}>
-							Consumida: {Consumo} MB
+							Utilizado: {Consumo} MB
 						</h4>
 					</div>
-					<div className=" d-flex justify-content-evenly mb-1">
-						<h2 style={{ alignContent: "center", fontFamily: 'Roboto Condensed' }}>
-							Consumo de memoria RAM
-						</h2>
-					</div>
+
 					<div className="row" style={{
-				Height: 500,
-				display: "flex"
-			}}>
-					<Line data={data} options={options} 
-  height={125}/>
+						Height: 500,
+						display: "flex"
+					}}>
+						<Line data={data} options={options}
+							height={125} />
 					</div>
 				</div>
 			</div>

@@ -1,6 +1,7 @@
 
 import Home from './components/Home';
 import RAM from './components/RAM';
+import CPU from './components/CPU';
 
 import Navigation from './components/Navigation';
 import { Routes, Route } from 'react-router-dom';
@@ -15,6 +16,8 @@ function App() {
         <Route path='/Home' element={<Home/>} />
 
         <Route path='/RAM' element={<RAM/>} />
+
+        <Route path='/CPU' element={<CPU/>} />
        </Routes>
 
 

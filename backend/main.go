@@ -40,32 +40,29 @@ type Padre struct {
 type Raiz struct {
 	Padres []Padre `json:"root"`
 }
-type CPUJSON struct {
-	Usado    float64 `json:"porcentaje"`
-	Procesos Raiz    `json:"procesos"`
-}
 
 
-func CPU() CPUJSON {
-	cmd := "awk '{u=$2+$4; t=$2+$4+$5; if (NR==1){u1=u; t1=t;} else print ($2+$4-u1) * 100 / (t-t1) ; }' <(grep 'cpu ' /proc/stat) <(sleep 1;grep 'cpu ' /proc/stat)"
-	porcentaje, _ := exec.Command("bash", "-c", cmd).Output()
-	Aux := strings.TrimSpace(string(porcentaje))
-	usoCPU, _ := strconv.ParseFloat(Aux, 64)
 
-	output, err := ioutil.ReadFile("/proc/cpu_201801597")
-	if err != nil {
-		log.Fatal(err)
-	}
-	var dataCPU Raiz
-	json.Unmarshal(output, &dataCPU)
+// func CPUX() CPUJSON {
+// 	cmd := "top -bn 1 -i -c | head -n 3 | tail -1 | awk {'print 100-$8'}	"
+// 	porcentaje, _ := exec.Command("bash", "-c", cmd).Output()
+// 	aux := strings.TrimSpace(string(porcentaje))
+// 	consumo, _ := strconv.ParseFloat(aux, 64)
 
-	var cpu CPUJSON
+// 	output, err := ioutil.ReadFile("/proc/cpu_201801597")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	var dataCPU Raiz
+// 	json.Unmarshal(output, &dataCPU)
 
-	cpu.Procesos = dataCPU
-	cpu.Usado = usoCPU
+// 	var cpu CPUJSON
 
-	return cpu
-}
+// 	cpu.Procesos = dataCPU
+// 	cpu.Usado = usoCPU
+
+// 	return cpu
+// }
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -91,7 +88,7 @@ func HomeEcho(conn *websocket.Conn) {
 	for {
 		Home := HomeHandler()
 		conn.WriteJSON(Home)
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }
 
@@ -154,7 +151,7 @@ func RAMEcho(conn *websocket.Conn) {
 	for {
 		RAM := RAMHandler()
 		conn.WriteJSON(RAM)
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }
 
@@ -187,10 +184,44 @@ func RAMHandler() RAMJSON {
 	return ram
 }
 
+
+func CPU(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	CPUEcho(ws)
+}
+
+func CPUEcho(conn *websocket.Conn) {
+	for {
+		CPU := CPUHandler()
+		conn.WriteJSON(CPU)
+		time.Sleep(3 * time.Second)
+	}
+}
+
+type CPUJSON struct {
+	Porcentaje    float64 `json:"porcentaje"`
+}
+
+func CPUHandler() CPUJSON {
+	cmd := "top -bn 1 -i -c | head -n 3 | tail -1 | awk {'print 100-$8'}"
+	consumo, _ := exec.Command("bash", "-c", cmd).Output()
+	aux := strings.TrimSpace(string(consumo))
+	porcentaje, _ := strconv.ParseFloat(aux, 64)
+
+	var cpu CPUJSON
+	cpu.Porcentaje=porcentaje
+	return cpu
+}
+
 func setupRoutes() {
 	http.HandleFunc("/Home", Home)
 
 	http.HandleFunc("/RAM", RAM)
+
+	http.HandleFunc("/CPU", CPU)
 }
 
 func main() {

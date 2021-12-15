@@ -24,7 +24,6 @@ const ws = new WebSocket("ws://127.0.0.1:8080/CPU");
 
 const CPU = () => {
 
-	const [Total, setTotal] = useState(0)
 	const [Consumo, setConsumo] = useState(0)
 	const [Porcentaje, setPorcentaje] = useState([])
 	const [Labels, setLabels] = useState([])
@@ -36,12 +35,11 @@ const CPU = () => {
 
 			};
 			ws.onmessage = (message) => {
-				console.log(message.data)
+				
 				var valor = JSON.parse(message.data);
 				var tiempoTranscurrido = Date.now();
 				var hoy = new Date(tiempoTranscurrido);
-				setTotal(valor.total)
-				setConsumo(valor.consumo)
+				setConsumo(valor.porcentaje)
 				if (Porcentaje.length < 10) {
 					setPorcentaje(Porcentaje => [...Porcentaje, valor.porcentaje])
 					setLabels(Labels => [...Labels, hoy.toLocaleTimeString()])
@@ -63,7 +61,7 @@ const CPU = () => {
 		labels: Labels,
 		datasets: [
 			{
-				label: "% Memoria",
+				label: "% CPU",
 				data: Porcentaje,
 				fill: true,
 				backgroundColor: '#000000',
@@ -91,27 +89,24 @@ const CPU = () => {
 				display: "flex"
 			}}>
 				<div className='container row ' style={{ alignContent: "center", background: "white", padding: "30px 20px 10px 20px", borderRadius: 10 }}>
-					<div className="col-md-6  mt-2 d-flex justify-content-evenly" >
-						<h4 style={{ alignContent: "center", fontFamily: 'Roboto Condensed' }}>
-							Total: {Total} MB
-						</h4>
-					</div>
-					<div className="col-md-6  mt-2 d-flex justify-content-evenly" >
-						<h4 style={{ alignContent: "center", fontFamily: 'Roboto Condensed' }}>
-							Consumida: {Consumo} MB
-						</h4>
-					</div>
+
+					
 					<div className=" d-flex justify-content-evenly mb-1">
 						<h2 style={{ alignContent: "center", fontFamily: 'Roboto Condensed' }}>
-							Consumo de memoria RAM
+							Consumo de CPU
 						</h2>
 					</div>
+					<div className="mt-2 d-flex justify-content-evenly" >
+						<h4 style={{ alignContent: "center", fontFamily: 'Roboto Condensed' }}>
+							CPU Utilizado: {Consumo} %
+						</h4>
+					</div>
 					<div className="row" style={{
-				Height: 500,
-				display: "flex"
-			}}>
-					<Line data={data} options={options} 
-  height={125}/>
+						Height: 500,
+						display: "flex"
+					}}>
+						<Line data={data} options={options}
+							height={125} />
 					</div>
 				</div>
 			</div>
