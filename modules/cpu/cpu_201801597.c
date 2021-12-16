@@ -6,7 +6,7 @@
 #include <linux/seq_file.h>
 #include <linux/hugetlb.h>
 #include <linux/sched.h>
-#include <linux/mm.h> // get_mm_rss()
+#include <linux/mm.h> 
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Modulo Memoria CPU");
@@ -39,12 +39,12 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
             if (Aux)
             {
                 seq_printf(archivo, "{\n\t\"pid\":%d,\n\t\"nombre\":\"%s\",\n\t\"ram\":%ld,\n\t\"usuario\":\"%d\",\n\t\"estado\":\"%ld\",\n\t\"hijos\":[", 
-                                      task->pid,            task->comm,         mb,             task->sessionid,        task->state     );
+                                      task->pid,            task->comm,         mb,             __kuid_val(task->real_cred->uid),        task->state     );
                 Aux = false;
             }
             else{
             seq_printf(archivo, ",{\n\t\"pid\":%d,\n\t\"nombre\":\"%s\",\n\t\"ram\":%ld,\n\t\"usuario\":\"%d\",\n\t\"estado\":\"%ld\",\n\t\"hijos\":[", 
-            task->pid, task->comm, mb,task->sessionid,        task->state);
+            task->pid, task->comm, mb,__kuid_val(task->real_cred->uid),        task->state);
             }
             esPadre = true;
         }
@@ -53,13 +53,13 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
             if (Aux)
             {
                 seq_printf(archivo, "{\n\t\"pid\":%d,\n\t\"nombre\":\"%s\",\n\t\"ram\": 0,\n\t\"usuario\":\"%d\",\n\t\"estado\":\"%ld\",\n\t\"hijos\":[", 
-                task->pid, task->comm,task->sessionid,        task->state);
+                task->pid, task->comm,__kuid_val(task->real_cred->uid),        task->state);
                 Aux = false;
             }
             else
             {
                 seq_printf(archivo, ",{\n\t\"pid\":%d,\n\t\"nombre\":\"%s\",\n\t\"ram\": 0,\n\t\"usuario\":\"%d\",\n\t\"estado\":\"%ld\",\n\t\"hijos\":[", 
-                task->pid, task->comm,task->sessionid,        task->state);
+                task->pid, task->comm,__kuid_val(task->real_cred->uid),        task->state);
             }
             esPadre = true;
         }
@@ -68,7 +68,6 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
         {
             seq_printf(archivo, "\n\t\t");
             task_child = list_entry(list, struct task_struct, sibling);
-            // seq_printf(archivo, "\tProceso Hijo %s (pid: %d)\n",task_child->comm, task_child->pid )
             if (task_child->mm)
             {
                 conhijos = true;
@@ -113,13 +112,11 @@ static int escribir_archivo(struct seq_file *archivo, void *v)
 
     return 0;
 }
-//Funcion que se ejecutara cada vez que se lea el archivo con el comando CAT
 static int al_abrir(struct inode *inode, struct file *file)
 {
     return single_open(file, escribir_archivo, NULL);
 }
 
-//Si el kernel es 5.6 o mayor se usa la estructura proc_ops
 static struct proc_ops operaciones =
     {
         .proc_open = al_abrir,
@@ -132,7 +129,6 @@ static int _insert(void)
     return 0;
 }
 
-//Funcion a ejecuta al remover el modulo del kernel con rmmod
 static void _remove(void)
 {
     remove_proc_entry("cpu_201801597", NULL);

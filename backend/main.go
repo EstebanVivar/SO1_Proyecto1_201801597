@@ -45,6 +45,7 @@ type Raiz struct {
 
 
 
+
 // func CPUX() CPUJSON {
 // 	cmd := "top -bn 1 -i -c | head -n 3 | tail -1 | awk {'print 100-$8'}	"
 // 	porcentaje, _ := exec.Command("bash", "-c", cmd).Output()
@@ -112,20 +113,16 @@ func HomeHandler() HomeJSON {
 	var dataCPU Raiz
 	json.Unmarshal(output, &dataCPU)
 	var home HomeJSON
+	
 	home.Total = len(dataCPU.Padres)
-	for i, v := range dataCPU.Padres {
-		switch v.Usuario {
-		case "-1":
-			dataCPU.Padres[i].Usuario = "root"
-		case "3":
-			dataCPU.Padres[i].Usuario = "carlos"
-		}
-
+	for i, v := range dataCPU.Padres {	
+		user, _ := exec.Command("sh","-c","getent passwd "+v.Usuario+" | cut -d: -f1").Output()
+		dataCPU.Padres[i].Usuario=string(user)
 		switch v.Estado {
-		case "1":
+		case "0":
 			dataCPU.Padres[i].Estado = "Ejecutando"
 			home.Ejecucion++
-		case "1026":
+		case "1026","1","2":
 			dataCPU.Padres[i].Estado = "Suspendido"
 			home.Suspendidos++
 		case "260":
@@ -242,7 +239,7 @@ func kill(w http.ResponseWriter, r *http.Request) {
 
 	
 	fmt.Println("Command Successfully Executed")
-	json.NewEncoder(w).Encode("OKOK")
+	json.NewEncoder(w).Encode("OK")
 }
 
 func main() {

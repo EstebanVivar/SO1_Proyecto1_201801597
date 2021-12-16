@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Accordion, Button, Form, Table } from 'react-bootstrap';
-
 import axios from 'axios';
 
 const Home = () => {
@@ -50,11 +49,15 @@ const Home = () => {
 			setZombies(valor.zombies)
 			setProcesos(valor.procesos.root)
 		};
+		
 
 
 	}, [Total, Ejecucion, Suspendidos, Detenidos, Zombies, Procesos])
 
+	
+
 	let font_color = "black"
+
 	return (
 		<div className="d-flex justify-content-center container-fluid p-5 mb-5">
 			<div className="row" style={{
@@ -78,27 +81,29 @@ const Home = () => {
 						Total: {Total}
 					</h4>
 				</div>
-				<div className="col-md-6  mt-4 " >
-					<Accordion defaultActiveKey="0">
-						{Procesos.map((element) => {
+				<div className="col-md-6  mt-2" >
+					{Procesos.map((element) => {
+							
 							return (
+								<Accordion flush key={element.pid} defaultActiveKey="0">
 								<Accordion.Item key={element.pid} eventKey="1">
-									<Accordion.Header key={element.pid}>PID: {element.pid} - Proceso:{element.nombre}</Accordion.Header>
+									<Accordion.Header key={element.pid}>PID: {element.pid} - Proceso: {element.nombre}</Accordion.Header>
 									{element.hijos.length > 0 ?
 										element.hijos.map((child, id) => {
 											return (
-												<Accordion.Body className='bg-dark text-white ' key={id}>
-													PID: {child.pid} - Proceso:{child.nombre}
+												<Accordion.Body key={id}>
+													----- PID: {child.pid} - Proceso: {child.nombre}
 												</Accordion.Body>
 											)
 										}) : null}
 								</Accordion.Item>
+								</Accordion> 
 							)
 						})}
-					</Accordion>
+					
 
 				</div>
-				<div className="col-md-6 mt-4" >
+				<div className="col-md-6 mt-2" >
 					<Table bordered hover variant="light">
 						<thead>
 							<tr>
