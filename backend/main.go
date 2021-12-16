@@ -242,6 +242,15 @@ func kill(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("OK")
 }
 
+func pruebaEndpoint(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode("prueba")
+}
+
+func userEndpoint(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode("userID")
+}
 func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
@@ -252,6 +261,11 @@ func main() {
 	router.HandleFunc("/CPU", CPU)
 
 	router.HandleFunc("/Kill", kill)
+
+	router.HandleFunc("/prueba", pruebaEndpoint)
+	router.HandleFunc("/userid", userEndpoint)
+
+
 	
 	c := cors.New(cors.Options{
         AllowedOrigins: []string{"*"},
